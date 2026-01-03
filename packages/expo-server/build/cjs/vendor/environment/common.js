@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createEnvironment = createEnvironment;
+const matchers_1 = require("../../utils/matchers");
 function initManifestRegExp(manifest) {
     return {
         ...manifest,
@@ -63,6 +64,17 @@ function createEnvironment(input) {
         };
         return ssrRenderer;
     }
+    async function executeLoader(request, route) {
+        if (!route.loader) {
+            return null;
+        }
+        const loaderModule = (await input.loadModule(route.loader));
+        if (!loaderModule?.loader) {
+            return null;
+        }
+        const params = (0, matchers_1.parseParams)(request, route);
+        return loaderModule.loader({ params, request });
+    }
     return {
         async getRoutesManifest() {
             return getCachedRoutesManifest();
@@ -72,7 +84,12 @@ function createEnvironment(input) {
             const renderer = await getServerRenderer();
             if (renderer) {
                 try {
-                    return await renderer(request);
+                    let renderOptions;
+                    const data = await executeLoader(request, route);
+                    if (data !== null) {
+                        renderOptions = { loader: { data } };
+                    }
+                    return await renderer(request, renderOptions);
                 }
                 catch (error) {
                     console.error('SSR render error:', error);
@@ -104,6 +121,9 @@ function createEnvironment(input) {
                 return null;
             }
             return mod;
+        },
+        async getLoaderData(request, route) {
+            return executeLoader(request, route);
         },
     };
 }
