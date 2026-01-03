@@ -57,6 +57,7 @@ describe('static loader', () => {
       expect(files).toContain('posts/static-post-1.html');
       expect(files).toContain('posts/static-post-2.html');
 
+      // Loader outputs
       expect(files).toContain('_expo/loaders/second');
       expect(files).toContain('_expo/loaders/posts/[postId]');
       expect(files).toContain('_expo/loaders/posts/static-post-1');
