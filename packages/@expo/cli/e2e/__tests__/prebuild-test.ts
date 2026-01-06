@@ -71,8 +71,16 @@ it('runs `npx expo prebuild` asserts when expo is not installed', async () => {
 
   // Create the project root aot
   await fs.mkdir(projectRoot, { recursive: true });
+
   // Create a fake package.json -- this is a terminal file that cannot be overwritten.
-  await fs.writeFile(path.join(projectRoot, 'package.json'), '{ "version": "1.0.0" }');
+  await fs.writeFile(path.join(projectRoot, 'package.json'), JSON.stringify({
+    version: '1.0.0',
+    scripts: {
+      android: 'expo start --android',
+      ios: 'expo start --ios',
+    },
+  }));
+
   await fs.writeFile(path.join(projectRoot, 'app.json'), '{ "expo": { "name": "foobar" } }');
 
   await expect(
